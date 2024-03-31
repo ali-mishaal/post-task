@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 class SocialAuthController extends Controller
@@ -13,13 +16,23 @@ class SocialAuthController extends Controller
         return Socialite::driver('facebook')->redirect();
     }
 
-    public function handleFacebookCallback()
+    public function handleFacebookCallback(): RedirectResponse
     {
         $user = Socialite::driver('facebook')->user();
 
-        // Implement your logic to handle the authenticated user
-        // e.g., you can retrieve the user, create a new user, or log in existing users
+        $existingUser = $this->userRepository->getUserByEmail($user->getEmail());
 
-        // Return a response or redirect to the desired location
+        if ($existingUser) {
+            Auth::login($existingUser);
+        } else {
+            $newUser = $this->userRepository->createUser([
+                'name' => $user->getName(),
+                'email' => $user->getEmail(),
+            ]);
+
+            Auth::login($newUser);
+        }
+
+        return redirect('/timeline');
     }
 }

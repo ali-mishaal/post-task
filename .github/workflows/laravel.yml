@@ -1,0 +1,34 @@
+name: HPT
+
+on:
+  push:
+    branches: [ "mu-task" ]
+  pull_request:
+    branches: [ "mu-task" ]
+
+jobs:
+  laravel-tests:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+
+      - name: Install composer dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Generate application key
+        run: php artisan key:generate
+
+      - name: Create SQLite database
+        run: touch database/database.sqlite
+

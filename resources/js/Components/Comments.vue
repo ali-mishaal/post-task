@@ -1,11 +1,11 @@
 <script setup>
 import {computed, ref, toRef, watch} from "vue";
 
-import EditPost from "@/Components/EditPost.vue";
 import {router, useForm, usePage} from "@inertiajs/vue3";
 import InputError from "@/Components/InputError.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import TextInput from "@/Components/TextInput.vue";
+import {createToaster} from "@meforma/vue-toaster";
 
 const showModal = ref(false);
 const props = defineProps({
@@ -15,13 +15,14 @@ const props = defineProps({
     }
 });
 const post = props.post;
-
+const toaster = createToaster({});
 const commentsRef = toRef(props.post, 'comments');
 
 
 const selectedComments = ref([]);
 const deleteForm = useForm({
-    ids: []
+    ids: [],
+    post_user_id: post.user_id
 })
 
 watch(
@@ -42,6 +43,7 @@ const form = useForm({
 
 const submitComment = () => {
     form.post(route('comments.store'), {
+        preserveScroll: true,
         onSuccess: (response) => {
             commentsRef.value.push({
                 'id' : response.props.flash.data.id,
@@ -52,6 +54,7 @@ const submitComment = () => {
             })
 
             form.comment = ''
+            toaster.show(response.props.flash.success);
         }
     });
 };
@@ -59,10 +62,16 @@ const submitComment = () => {
 const deleteSelectedComments = () => {
     if (confirm('Are you sure you want to delete this post?')) {
         deleteForm.post(route('comments.bulk.destroy'), {
+            preserveScroll: true,
             onSuccess: (response) => {
                 commentsRef.value = commentsRef.value.filter(
                     (comment) => !selectedComments.value.includes(comment.id)
                 );
+
+                selectedComments.value = []
+                toaster.show(response.props.flash.success);
+            },onError: (errors) => {
+                toaster.error(errors.error);
             }
         });
     }
@@ -72,19 +81,19 @@ const deleteSelectedComments = () => {
 </script>
 
 <template>
-    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4" @click="showModal = true">comments
+    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4" @click="showModal = true">     {{ $t('comments') }}
     </button>
     <div class="modal" v-if="showModal">
         <div class="modal-content">
             <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                 <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-                    post
+                    {{ $t('post') }}
                 </h3>
                 <button @click="showModal = false" type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="default-modal">
                     <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
                     </svg>
-                    <span  class="sr-only">Close modal</span>
+                    <span  class="sr-only"> {{ $t('close') }}</span>
                 </button>
             </div>
 
@@ -102,9 +111,9 @@ const deleteSelectedComments = () => {
                 </div>
 
                 <hr>
-                <h4>comments</h4>
+                <h4 class="text-center font-bold ">     {{ $t('comments') }}</h4>
                 <div>
-                    <button  class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 mx-4" @click="deleteSelectedComments">Delete Selected Comments</button>
+                    <button v-if="selectedComments.length"  class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 mx-4" @click="deleteSelectedComments">     {{ $t('deleteSelectedComments') }}</button>
 
                     <div v-for="comment in commentsRef" :key="comment.id"
                          class="flex w-full justify-between border rounded-md mt-2">
@@ -144,10 +153,10 @@ const deleteSelectedComments = () => {
                             <InputError class="mt-2" :message="form.errors.comment"/>
                         </div>
                         <button class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 mt-2" type="submit">
-                            Submit
+                            {{ $t('comment') }}
                         </button>
 
-                        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 mx-4" @click="showModal = false">Close Modal</button>
+                        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 mx-4" @click="showModal = false">     {{ $t('close') }}</button>
                     </form>
 
                 </div>

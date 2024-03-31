@@ -15,6 +15,7 @@ return new class extends Migration
             $table->foreignId('post_id')->nullable()->references('id')->on('posts')->cascadeOnDelete();
             $table->index('user_id');
             $table->index('post_id');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

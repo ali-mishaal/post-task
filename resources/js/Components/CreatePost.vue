@@ -5,7 +5,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
 import TextArea from "@/Components/TextArea.vue";
 import {ref} from "vue";
-import Post from "@/Components/post.vue";
+import {createToaster} from "@meforma/vue-toaster";
 
 
 defineProps({
@@ -15,7 +15,7 @@ defineProps({
 
 const successMessage = ref('');
 const { posts } = usePage().props;
-
+const toaster = createToaster({});
 
 const form = useForm({
     title: '',
@@ -32,6 +32,7 @@ const handleImageUpload = (e) => {
 
 const submitPost = () => {
     form.post(route('posts.store'), {
+        preserveScroll: true,
         onSuccess: (response) =>  {
             posts.unshift(response.props.posts[0])
             successMessage.value = response.success;
@@ -39,6 +40,7 @@ const submitPost = () => {
             form.body = '';
             form.image = null;
             form.imagePreview = null;
+            toaster.show(response.props.flash.success);
         }
     });
 };
@@ -47,7 +49,8 @@ const submitPost = () => {
 </script>
 
 <template>
-    <Head title="Log in"/>
+    <Head title="create post"/>
+
     <div class=" mt-6 px-6 py-4 w-1/2 mx-auto bg-white shadow-md overflow-hidden sm:rounded-lg">
         <div v-if="successMessage" class="success-message">
             {{ successMessage }}
@@ -56,7 +59,7 @@ const submitPost = () => {
         <form @submit.prevent="submitPost" enctype="multipart/form-data">
 
             <div>
-                <InputLabel for="title" value="title"/>
+                <InputLabel for="title" :value="$t('title')"/>
                 <TextInput
                     id="title"
                     v-model="form.title"
@@ -70,7 +73,7 @@ const submitPost = () => {
             </div>
 
             <div>
-                <InputLabel for="body" value="body"/>
+                <InputLabel for="body" :value="$t('body')"/>
                 <TextArea
                     id="title"
                     v-model="form.body"
@@ -85,7 +88,7 @@ const submitPost = () => {
             </div>
 
             <div>
-                <InputLabel for="image" value="image"/>
+                <InputLabel for="image" :value="$t('image')"/>
                 <input id="image" type="file" @change="handleImageUpload">
 
                 <InputError class="mt-2" :message="form.errors.image"/>
@@ -97,7 +100,7 @@ const submitPost = () => {
 
             <div class="mt-4">
                 <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 ">
-                    Create Post
+                    {{ $t('createPost') }}
                 </button>
             </div>
         </form>

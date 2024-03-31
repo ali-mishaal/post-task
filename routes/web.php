@@ -4,6 +4,8 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\SocialAuthController;
 use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -17,6 +19,12 @@ use Inertia\Inertia;
 | contains the "web" middleware group. Now create something great!
 |
 */
+Route::post('/set-locale', function (Request $request) {
+    $locale = $request->input('locale');
+    \Illuminate\Support\Facades\Session::put('lang', $locale);
+
+    return redirect()->back();
+});
 
 Route::middleware([
     'auth:sanctum',

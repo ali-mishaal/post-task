@@ -5,7 +5,7 @@ import InputLabel from "@/Components/InputLabel.vue";
 import TextInput from "@/Components/TextInput.vue";
 import TextArea from "@/Components/TextArea.vue";
 import {ref} from "vue";
-
+import {createToaster} from "@meforma/vue-toaster";
 const props = defineProps({
     post: {
         type: Object,
@@ -16,7 +16,7 @@ const props = defineProps({
 const post = props.post;
 
 const showModal = ref(false);
-
+const toaster = createToaster({});
 const form = useForm({
     title: post?.title,
     body: post?.body,
@@ -26,6 +26,7 @@ const form = useForm({
 
 const updatePost = (postId) => {
     form.post(route('posts.update', { id: postId }), {
+        preserveScroll: true,
         onSuccess: (response) =>  {
             showModal.value = false;
             const indexOFUpdatedPost =  response.props.posts.findIndex((post) => post.id === postId)
@@ -33,6 +34,7 @@ const updatePost = (postId) => {
             post.title = updatedPost.title;
             post.body = updatedPost.body;
             post.image_url = updatedPost.image_url;
+            toaster.show(response.props.flash.success);
         }
     });
 };
@@ -47,7 +49,7 @@ const handleImageUpload = (e) => {
 </script>
 
 <template>
-    <button class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white" @click="showModal = true">edit</button>
+    <button class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white" @click="showModal = true"> {{ $t('edit') }}</button>
     <div class="modal" v-if="showModal">
         <div class="modal-content">
             <form @submit.prevent="updatePost(post.id)" enctype="multipart/form-data">
@@ -94,10 +96,10 @@ const handleImageUpload = (e) => {
 
                 <div class="mt-4">
                     <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 ">
-                        update Post
+                        {{ $t('updatePost') }}
                     </button>
 
-                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 mx-4" @click="showModal = false">Close Modal</button>
+                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 mx-4" @click="showModal = false"> {{ $t('close') }}</button>
                 </div>
             </form>
         </div>
